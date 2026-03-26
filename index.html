@@ -92,9 +92,9 @@
     <label>Select Candidate</label>
     <select id="candidate">
       <option value="">-- Select Monitor --</option>
-      <option value="Rahul">Rahul</option>
-      <option value="Sneha">Sneha</option>
-      <option value="Amit">Amit</option>
+      <option value="Jay">Jay</option>
+      <option value="Harsh">Harsh</option>
+      <option value="Abhi">Abhi</option>
     </select>
 
     <button onclick="castVote()">Vote</button>
@@ -106,8 +106,10 @@
   </div>
 
   <script>
-    // In-memory vote storage (resets on page refresh)
-    const votes = [];
+    // CrudCrud API endpoint
+    const API = "https://crudcrud.com/api/36ce7d0c898c445ca31c4277899ad77b/votes";
+
+    window.onload = loadVotes;
 
     function castVote() {
       const name = document.getElementById("studentName").value.trim();
@@ -118,28 +120,46 @@
         return;
       }
 
-      const alreadyVoted = votes.some(v => v.name.toLowerCase() === name.toLowerCase());
-
-      if (alreadyVoted) {
-        alert("You have already voted!");
-        return;
-      }
-
-      votes.push({ name, candidate });
-
-      document.getElementById("studentName").value = "";
-      document.getElementById("candidate").value = "";
-
-      displayVotes();
+      fetch(API)
+        .then(res => res.json())
+        .then(data => {
+          const already = data.some(v => v.name.toLowerCase() === name.toLowerCase());
+          if (already) {
+            alert("You have already voted!");
+            return Promise.reject("duplicate");
+          }
+          return fetch(API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, candidate })
+          });
+        })
+        .then(res => {
+          if (!res || !res.ok) return;
+          document.getElementById("studentName").value = "";
+          document.getElementById("candidate").value = "";
+          loadVotes();
+        })
+        .catch(err => { if (err !== "duplicate") console.error("Error:", err); });
     }
 
-    function displayVotes() {
+    function loadVotes() {
+      fetch(API)
+        .then(res => res.json())
+        .then(displayVotes)
+        .catch(err => {
+          console.error("Load error:", err);
+          document.getElementById("voteList").innerHTML = "<p style='color:red'>Failed to load votes. API key may be expired.</p>";
+        });
+    }
+
+    function displayVotes(data) {
       const voteList = document.getElementById("voteList");
       voteList.innerHTML = "";
 
       const counts = {};
 
-      votes.forEach(v => {
+      data.forEach(v => {
         counts[v.candidate] = (counts[v.candidate] || 0) + 1;
 
         const div = document.createElement("div");
