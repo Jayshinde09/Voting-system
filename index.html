@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Class Monitor Voting (Pure JavaScript)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(120deg, #6a11cb, #2575fc);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 25px 35px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      width: 420px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 15px;
+      background: #2575fc;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #1a5ed9;
+    }
+
+    .results {
+      margin-top: 20px;
+      background: #f4f6f9;
+      padding: 10px;
+      border-radius: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .vote-item {
+      padding: 8px;
+      margin: 5px 0;
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .summary {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 2px solid #ddd;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Class Monitor Voting</h2>
+
+    <label>Student Name</label>
+    <input type="text" id="studentName" placeholder="Enter your name" />
+
+    <label>Select Candidate</label>
+    <select id="candidate">
+      <option value="">-- Select Monitor --</option>
+      <option value="Rahul">Rahul</option>
+      <option value="Sneha">Sneha</option>
+      <option value="Amit">Amit</option>
+    </select>
+
+    <button onclick="castVote()">Vote</button>
+
+    <div class="results">
+      <h3>Voting Results</h3>
+      <div id="voteList"></div>
+    </div>
+  </div>
+
+  <script>
+    // In-memory vote storage (resets on page refresh)
+    const votes = [];
+
+    function castVote() {
+      const name = document.getElementById("studentName").value.trim();
+      const candidate = document.getElementById("candidate").value;
+
+      if (!name || !candidate) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      const alreadyVoted = votes.some(v => v.name.toLowerCase() === name.toLowerCase());
+
+      if (alreadyVoted) {
+        alert("You have already voted!");
+        return;
+      }
+
+      votes.push({ name, candidate });
+
+      document.getElementById("studentName").value = "";
+      document.getElementById("candidate").value = "";
+
+      displayVotes();
+    }
+
+    function displayVotes() {
+      const voteList = document.getElementById("voteList");
+      voteList.innerHTML = "";
+
+      const counts = {};
+
+      votes.forEach(v => {
+        counts[v.candidate] = (counts[v.candidate] || 0) + 1;
+
+        const div = document.createElement("div");
+        div.className = "vote-item";
+        div.textContent = `${v.name} voted for ${v.candidate}`;
+        voteList.appendChild(div);
+      });
+
+      const summary = document.createElement("div");
+      summary.className = "summary";
+      summary.innerHTML = "Total Votes:<br>" +
+        Object.entries(counts)
+          .map(([c, n]) => `${c}: ${n}`)
+          .join("<br>");
+
+      voteList.appendChild(summary);
+    }
+  </script>
+</body>
+</html>
